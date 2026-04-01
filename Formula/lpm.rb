@@ -7,20 +7,20 @@ class Lpm < Formula
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/lpm-dev/rust-client/releases/download/v0.6.0/lpm-darwin-arm64"
-      sha256 "cf85f0a6bdfa27bf972775e5219f95b89a82793776a45a3c8499baf0618ec0a1"
+      sha256 "491a02bb6881dfa46a39335366a138f259e22f562e9e20b0389fc2e1c1d67b7d"
     else
       url "https://github.com/lpm-dev/rust-client/releases/download/v0.6.0/lpm-darwin-x64"
-      sha256 "a86cf0cbf2a4c7856feeddcba6f93e59ae7797fe4252302b82cbb2d30914ebcb"
+      sha256 "c5cf224cb1b59b9224653383c736107fc6df10ba9c33cd8d055aa5e272c56b4b"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/lpm-dev/rust-client/releases/download/v0.6.0/lpm-linux-arm64"
-      sha256 "d522a4824d884b9e8c71e9f226f562d2fa14503929d7dc1599764790af6a4fc9"
+      sha256 "7eacf32248ab24fd53ffe8025d43cdf5ea36cb8488096f8926474f0982b98a28"
     else
       url "https://github.com/lpm-dev/rust-client/releases/download/v0.6.0/lpm-linux-x64"
-      sha256 "e8f0ea2ae16ed8fc70deb3e2280b6bc44c232b0e11fe80eeaf08789b3a408316"
+      sha256 "34c26a1f01643a33c126e0d2466a0c9853aa3398ec37d107c07029be70d9726a"
     end
   end
 
