@@ -2,25 +2,25 @@ class Lpm < Formula
   desc "Fast package manager for lpm.dev — written in Rust"
   homepage "https://lpm.dev"
   license "MIT"
-  version "0.54.0"
+  version "0.55.0"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.54.0/lpm-darwin-arm64"
-      sha256 "d7e4ce061cc34b854ae4cc490410ff2bafb8f6887b52625bf13fd853482f76b9"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.55.0/lpm-darwin-arm64"
+      sha256 "12e15ae278beafe69eceef7dececaf1a7cc735f8f39515a871c846717687a651"
     else
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.54.0/lpm-darwin-x64"
-      sha256 "2596ab845f1f8f49e8ca8cc2f1b77011aa57d4d59c36edead30f43d85cca7fef"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.55.0/lpm-darwin-x64"
+      sha256 "833cbdb2f588dfc2679132dc318d6f27758cf9a6d2f6aba41c2bd003bc6e85c2"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.54.0/lpm-linux-arm64"
-      sha256 "8b125c574d87709576811040aa97b816fbb649d4837bd8adb1b663ad2f9340a5"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.55.0/lpm-linux-arm64"
+      sha256 "0b24b06321e0eeaef4791a32d5d803e4723e46b545a69ae7c6e47d7b02f8537a"
     else
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.54.0/lpm-linux-x64"
-      sha256 "6990861c29d264182ac78be026ae20d2f706afc87141fd45dc244bd2cd052a11"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.55.0/lpm-linux-x64"
+      sha256 "0de7863aa03661abe4f10cef6291b060680ab309ca5dd342e8067e18f3468879"
     end
   end
 
