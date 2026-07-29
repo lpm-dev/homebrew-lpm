@@ -1,8 +1,8 @@
 class Lpm < Formula
   desc "Fast package manager for lpm.dev — written in Rust"
   homepage "https://lpm.dev"
-  license "MIT"
   version "0.71.0"
+  license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
@@ -30,6 +30,6 @@ class Lpm < Formula
   end
 
   test do
-    assert_match "lpm-rs", shell_output("#{bin}/lpm --version 2>&1", 0)
+    assert_match "lpm #{version}", shell_output("#{bin}/lpm --version 2>&1")
   end
 end
