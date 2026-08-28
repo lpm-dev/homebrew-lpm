@@ -7,17 +7,14 @@ workflow="$repo_root/.github/workflows/update-formula.yml"
 renderer="$repo_root/scripts/render-formula.rb"
 template="$repo_root/templates/lpm.rb.erb"
 
-# The checked-in formula must keep using the assets published for its exact
-# version. The next stable release dispatch replaces it with the bundle-aware
-# template below.
-grep -q 'lpm-darwin-arm64"' "$formula"
-grep -q 'lpm-darwin-x64"' "$formula"
+# The checked-in formula must use the signed macOS app bundles published for
+# its exact version. Release dispatches render this same bundle-aware contract.
+grep -q 'lpm-darwin-arm64.zip' "$formula"
+grep -q 'lpm-darwin-x64.zip' "$formula"
+grep -q 'using: :nounzip' "$formula"
+grep -q 'LPM CLI.app' "$formula"
 grep -Fq 'assert_match "lpm #{version}"' "$formula"
 grep -Fq 'bin.install_symlink "lpm" => "lpx"' "$formula"
-if grep -q 'lpm-darwin-.*\.zip' "$formula"; then
-  echo "current formula references an unpublished bundle archive" >&2
-  exit 1
-fi
 
 grep -q 'lpm-darwin-arm64.zip' "$template"
 grep -q 'lpm-darwin-x64.zip' "$template"
