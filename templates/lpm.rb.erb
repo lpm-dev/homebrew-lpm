@@ -50,9 +50,7 @@ class Lpm < Formula
                           .reject { |entry| ignored_entries.include?(File.basename(entry)) }
       bundle_entries.each do |entry|
         odie "release app contains a symbolic link: #{entry}" if File.symlink?(entry)
-        if !File.file?(entry) && !File.directory?(entry)
-          odie "release app contains an unsupported entry: #{entry}"
-        end
+        odie "release app contains an unsupported entry: #{entry}" if !File.file?(entry) && !File.directory?(entry)
       end
       actual_entries = bundle_entries.map do |entry|
         Pathname(entry).relative_path_from(app_bundle).to_s
@@ -65,19 +63,13 @@ class Lpm < Formula
       )
       odie "could not read the release app signature" unless signature_status.success?
       signature_lines = (signature_out + signature_err).lines.map(&:strip)
-      unless signature_lines.include?("Identifier=dev.lpm.cli")
-        odie "release app has an unexpected bundle identifier"
-      end
-      unless signature_lines.include?("TeamIdentifier=823S8YKMRW")
-        odie "release app has an unexpected Team ID"
-      end
+      odie "release app has an unexpected bundle identifier" unless signature_lines.include?("Identifier=dev.lpm.cli")
+      odie "release app has an unexpected Team ID" unless signature_lines.include?("TeamIdentifier=823S8YKMRW")
 
       entitlements_out, entitlements_err, entitlements_status = Open3.capture3(
         "/usr/bin/codesign", "-d", "--entitlements", ":-", app_bundle.to_s
       )
-      unless entitlements_status.success?
-        odie "could not read the release app entitlements: #{entitlements_err}"
-      end
+      odie "could not read the release app entitlements: #{entitlements_err}" unless entitlements_status.success?
       entitlements = buildpath/"lpm-cli-entitlements.plist"
       entitlements.write entitlements_out
       access_groups = Utils.safe_popen_read(
@@ -92,9 +84,7 @@ class Lpm < Formula
       profile_out, profile_err, profile_status = Open3.capture3(
         "/usr/bin/openssl", "smime", "-verify", "-noverify", "-inform", "DER", "-in", profile.to_s
       )
-      unless profile_status.success?
-        odie "could not verify the release app provisioning profile: #{profile_err}"
-      end
+      odie "could not verify the release app provisioning profile: #{profile_err}" unless profile_status.success?
       profile_plist = buildpath/"lpm-cli-profile.plist"
       profile_plist.write profile_out
       profile_team = Utils.safe_popen_read(
