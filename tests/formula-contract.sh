@@ -59,20 +59,23 @@ ruby -c "$formula" >/dev/null
 
 render_root=$(mktemp -d)
 trap 'rm -rf "$render_root"' EXIT HUP INT TERM
+rendered_formula="$render_root/Formula/lpm.rb"
+mkdir -p "$(dirname "$rendered_formula")"
 hash=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 VERSION=0.76.3 \
 SHA_DARWIN_ARM64="$hash" \
-SHA_DARWIN_X64="$hash" \
-SHA_LINUX_ARM64="$hash" \
-SHA_LINUX_X64="$hash" \
+SHA_DARWIN_X64=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+SHA_LINUX_ARM64=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc \
+SHA_LINUX_X64=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd \
 ruby "$renderer" \
-  --output "$render_root/lpm.rb" \
+  --output "$rendered_formula" \
   --release-base-url http://127.0.0.1:8765
 
-ruby -c "$render_root/lpm.rb" >/dev/null
-grep -Fq 'version "0.76.3"' "$render_root/lpm.rb"
-grep -Fq 'url "http://127.0.0.1:8765/lpm-darwin-arm64.zip", using: :nounzip' "$render_root/lpm.rb"
-grep -Fq 'assert_match "lpm #{version}"' "$render_root/lpm.rb"
+ruby -c "$rendered_formula" >/dev/null
+brew style "$rendered_formula"
+grep -Fq 'version "0.76.3"' "$rendered_formula"
+grep -Fq 'url "http://127.0.0.1:8765/lpm-darwin-arm64.zip", using: :nounzip' "$rendered_formula"
+grep -Fq 'assert_match "lpm #{version}"' "$rendered_formula"
 
 if VERSION='0.76.3;false' \
   SHA_DARWIN_ARM64="$hash" \
