@@ -127,7 +127,7 @@ class Lpm < Formula
         odie "release app profile has an unexpected application identifier"
       end
       authorized_profile_groups = [expected_access_group, "823S8YKMRW.*"]
-      unless (profile_groups.lines.map(&:strip) & authorized_profile_groups).any?
+      unless profile_groups.lines.map(&:strip).intersect?(authorized_profile_groups)
         odie "release app profile lacks the shared Keychain access group"
       end
 
