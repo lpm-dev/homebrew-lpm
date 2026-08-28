@@ -4,6 +4,7 @@ set -eu
 repo_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P)
 formula="$repo_root/Formula/lpm.rb"
 workflow="$repo_root/.github/workflows/update-formula.yml"
+ci_workflow="$repo_root/.github/workflows/ci.yml"
 renderer="$repo_root/scripts/render-formula.rb"
 template="$repo_root/templates/lpm.rb.erb"
 
@@ -42,10 +43,17 @@ if grep -q '"/usr/bin/stapler"' "$template"; then
 fi
 grep -q 'unexpected file inventory' "$template"
 grep -q 'ruby scripts/render-formula.rb' "$workflow"
+grep -q 'run-name: Update lpm.*correlation_id' "$workflow"
+grep -q 'CORRELATION_ID:' "$workflow"
 if grep -q 'cat > Formula/lpm.rb' "$workflow"; then
   echo "workflow still interpolates dispatch data into a shell heredoc" >&2
   exit 1
 fi
+
+grep -q 'pull_request:' "$ci_workflow"
+grep -q 'sh tests/formula-contract.sh' "$ci_workflow"
+grep -q 'ruby -c Formula/lpm.rb' "$ci_workflow"
+grep -q 'brew style Formula/lpm.rb' "$ci_workflow"
 
 ruby -c "$formula" >/dev/null
 
