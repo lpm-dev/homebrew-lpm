@@ -73,6 +73,7 @@ ruby "$renderer" \
 
 ruby -c "$rendered_formula" >/dev/null
 brew style "$rendered_formula"
+ruby "$repo_root/tests/formula-bundle-inventory.rb" "$formula" "$rendered_formula"
 grep -Fq 'version "0.76.3"' "$rendered_formula"
 grep -Fq 'url "http://127.0.0.1:8765/lpm-darwin-arm64.zip", using: :nounzip' "$rendered_formula"
 grep -Fq 'assert_match "lpm #{version}"' "$rendered_formula"
