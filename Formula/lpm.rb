@@ -44,7 +44,11 @@ class Lpm < Formula
         Contents/MacOS/lpm-rs
         Contents/_CodeSignature
         Contents/_CodeSignature/CodeResources
-      ].sort
+      ]
+      if (app_bundle/"Contents/Resources/LPMCLI.icns").file?
+        expected_entries.push("Contents/Resources", "Contents/Resources/LPMCLI.icns")
+      end
+      expected_entries.sort!
       ignored_entries = [".", ".."]
       bundle_entries = Dir.glob("#{app_bundle}/**/*", File::FNM_DOTMATCH)
                           .reject { |entry| ignored_entries.include?(File.basename(entry)) }
