@@ -3,26 +3,26 @@ require "open3"
 class Lpm < Formula
   desc "Fast package manager for lpm.dev — written in Rust"
   homepage "https://lpm.dev"
-  version "0.79.0"
+  version "0.81.0"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.79.0/lpm-darwin-arm64.zip", using: :nounzip
-      sha256 "f38e058acefb7960f2ce5b8b71466eb53e055b50fae780b9c391c65eabadc4f2"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.81.0/lpm-darwin-arm64.zip", using: :nounzip
+      sha256 "c89da7322c533d17e9eddf9890eaac09ed1957f3f42d0838dcaa3f6fa90c3be6"
     else
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.79.0/lpm-darwin-x64.zip", using: :nounzip
-      sha256 "9087c8e9238a8d0a01b112c8f055365a58faa0c5f09f49a80da04ff847876e11"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.81.0/lpm-darwin-x64.zip", using: :nounzip
+      sha256 "bf67b483efab617838ef4979a2abfe4fd8360fd55334bdf6b87068415b53d86b"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.79.0/lpm-linux-arm64"
-      sha256 "a410a433dc84227dceadf25dabf0579d7bc1cc8ec84d915b48dea05bd4cb648e"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.81.0/lpm-linux-arm64"
+      sha256 "dcf6683fd0a425deb9ef6ffed9fd4b95c0b938d4d47d00c883b48e335802e9e0"
     else
-      url "https://github.com/lpm-dev/rust-client/releases/download/v0.79.0/lpm-linux-x64"
-      sha256 "3bc7390a0a151841a3becb246690f09ef2ddd7b95f26e690be62162b0bda8329"
+      url "https://github.com/lpm-dev/rust-client/releases/download/v0.81.0/lpm-linux-x64"
+      sha256 "02a4b233181afa79c64f4393f2d6d0f98e45f5b079ebeed646fecbc28f57f86b"
     end
   end
 
