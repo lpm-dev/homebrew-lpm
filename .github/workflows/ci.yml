@@ -27,5 +27,7 @@ jobs:
         run: ruby -c Formula/lpm.rb
       - name: Test formula contract
         run: sh tests/formula-contract.sh
+      - name: Test dispatched release verification
+        run: bash tests/verify-dispatched-release.sh
       - name: Check Homebrew style
         run: brew style Formula/lpm.rb

@@ -49,6 +49,19 @@ if grep -q 'cat > Formula/lpm.rb' "$workflow"; then
   echo "workflow still interpolates dispatch data into a shell heredoc" >&2
   exit 1
 fi
+# Dispatch data reaches scripts only through env, never the script text.
+if grep -n 'client_payload' "$workflow" | grep -Ev '^[0-9]+:(run-name: |          [A-Z_0-9]+: \$\{\{ github\.event\.client_payload\.[a-z_0-9]+ \}\}$)'; then
+  echo "workflow expands dispatch data outside run-name and env" >&2
+  exit 1
+fi
+# The formula is rendered only from checksums the named release signed.
+verify_line=$(grep -n 'run: bash scripts/verify-dispatched-release.sh' "$workflow" | cut -d: -f1)
+render_line=$(grep -n 'ruby scripts/render-formula.rb' "$workflow" | cut -d: -f1)
+if [ -z "$verify_line" ] || [ -z "$render_line" ] || [ "$verify_line" -ge "$render_line" ]; then
+  echo "workflow must verify the dispatched release before rendering the formula" >&2
+  exit 1
+fi
+grep -q 'bash tests/verify-dispatched-release.sh' "$ci_workflow"
 
 grep -q 'pull_request:' "$ci_workflow"
 grep -q 'sh tests/formula-contract.sh' "$ci_workflow"
