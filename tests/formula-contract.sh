@@ -36,11 +36,26 @@ if grep -q '"/usr/bin/security", "cms"' "$template"; then
 fi
 grep -q 'com.apple.application-identifier' "$template"
 grep -q 'Entitlements:application-identifier' "$template"
-grep -q '"/usr/bin/xcrun", "stapler", "validate"' "$template"
-if grep -q '"/usr/bin/stapler"' "$template"; then
-  echo "formula template invokes a nonexistent stapler path" >&2
+# Most Homebrew users have only the Command Line Tools, whose stapler fails on
+# LPM's app, and some can't reach Apple. The formula checks LPM's Developer
+# ID signature with codesign, which ships with macOS.
+grep -q '"-R", CODE_REQUIREMENT, app_bundle' "$template"
+grep -q '"-R", CODE_REQUIREMENT, installed_app' "$template"
+grep -Fq '"-R", CODE_REQUIREMENT,' "$template"
+grep -Fq 'libexec/"LPM CLI.app"' "$template"
+grep -q 'leaf\[subject.OU\] = \\"823S8YKMRW\\"".freeze' "$template"
+# Homebrew's install sandbox can't evaluate `notarized`; see the template.
+if grep -q 'and notarized' "$template"; then
+  echo "formula template requires notarized, which Homebrew's sandbox can't evaluate" >&2
   exit 1
 fi
+grep -q '"OPENSSL_CONF" => nil' "$template"
+for file in "$template" "$formula"; do
+  if grep -Eq '"/usr/bin/xcrun"|"stapler"|"/usr/bin/stapler"|"/usr/sbin/spctl"|syspolicy_check' "$file"; then
+    echo "$file runs a developer tool or asks Apple's services during install" >&2
+    exit 1
+  fi
+done
 grep -q 'unexpected file inventory' "$template"
 grep -q 'ruby scripts/render-formula.rb' "$workflow"
 grep -q 'run-name: Update lpm.*correlation_id' "$workflow"
