@@ -6,6 +6,11 @@ require "tmpdir"
 
 class InventoryRejected < StandardError; end
 
+EXPECTED_CODE_REQUIREMENT = "=anchor apple generic and identifier \"dev.lpm.cli\" and " \
+                            "certificate 1[field.1.2.840.113635.100.6.2.6] exists and " \
+                            "certificate leaf[field.1.2.840.113635.100.6.1.13] exists and " \
+                            "certificate leaf[subject.OU] = \"823S8YKMRW\" and notarized".freeze
+
 class FormulaInventoryHarness
   class << self
     def desc(*); end
@@ -36,7 +41,10 @@ class FormulaInventoryHarness
   def system(*arguments)
     return if arguments == ["/usr/bin/ditto", "-x", "-k", cached_download, buildpath/"macos-bundle"]
 
-    expected = ["/usr/bin/codesign", "--verify", "--strict", "--verbose=4", buildpath/"macos-bundle/LPM CLI.app"]
+    expected = [
+      "/usr/bin/codesign", "--verify", "--strict", "--verbose=4", "-R", EXPECTED_CODE_REQUIREMENT,
+      buildpath/"macos-bundle/LPM CLI.app"
+    ]
     raise "unexpected command before signature verification: #{arguments.inspect}" unless arguments == expected
 
     throw :signature_verification_reached, true

@@ -1,6 +1,15 @@
 require "open3"
 
 class Lpm < Formula
+  # LPM's macOS app must satisfy this requirement. It ends in `notarized`,
+  # which codesign checks against the ticket stapled to the app, offline, so
+  # a Mac with neither Xcode nor Apple's services reachable can install, and
+  # an app LPM didn't sign or Apple didn't notarize is refused.
+  CODE_REQUIREMENT = "=anchor apple generic and identifier \"dev.lpm.cli\" and " \
+                     "certificate 1[field.1.2.840.113635.100.6.2.6] exists and " \
+                     "certificate leaf[field.1.2.840.113635.100.6.1.13] exists and " \
+                     "certificate leaf[subject.OU] = \"823S8YKMRW\" and notarized".freeze
+
   desc "Fast package manager for lpm.dev — written in Rust"
   homepage "https://lpm.dev"
   version "<%= version %>"
@@ -61,7 +70,7 @@ class Lpm < Formula
       end.sort
       odie "release app has an unexpected file inventory" if actual_entries != expected_entries
 
-      system "/usr/bin/codesign", "--verify", "--strict", "--verbose=4", app_bundle
+      system "/usr/bin/codesign", "--verify", "--strict", "--verbose=4", "-R", CODE_REQUIREMENT, app_bundle
       signature_out, signature_err, signature_status = Open3.capture3(
         "/usr/bin/codesign", "-dvv", app_bundle.to_s
       )
@@ -85,10 +94,14 @@ class Lpm < Formula
       end
 
       profile = app_bundle/"Contents/embedded.provisionprofile"
+      # With an OPENSSL_CONF meant for OpenSSL 3, macOS's LibreSSL exits 0
+      # without writing anything.
       profile_out, profile_err, profile_status = Open3.capture3(
+        { "OPENSSL_CONF" => nil },
         "/usr/bin/openssl", "smime", "-verify", "-noverify", "-inform", "DER", "-in", profile.to_s
       )
       odie "could not verify the release app provisioning profile: #{profile_err}" unless profile_status.success?
+      odie "could not read the release app provisioning profile" if profile_out.strip.empty?
       profile_plist = buildpath/"lpm-cli-profile.plist"
       profile_plist.write profile_out
       profile_team = Utils.safe_popen_read(
@@ -125,11 +138,10 @@ class Lpm < Formula
         odie "release app profile lacks the shared Keychain access group"
       end
 
-      system "/usr/bin/xcrun", "stapler", "validate", app_bundle
-      system "/usr/sbin/spctl", "--assess", "--type", "execute", "--verbose=4", app_bundle
-
       libexec.install app_bundle
-      installed_executable = libexec/"LPM CLI.app/Contents/MacOS/lpm-rs"
+      installed_app = libexec/"LPM CLI.app"
+      system "/usr/bin/codesign", "--verify", "--strict", "--verbose=4", "-R", CODE_REQUIREMENT, installed_app
+      installed_executable = installed_app/"Contents/MacOS/lpm-rs"
       bin.install_symlink installed_executable => "lpm"
       bin.install_symlink installed_executable => "lpx"
     else
@@ -141,6 +153,10 @@ class Lpm < Formula
   end
 
   test do
+    if OS.mac?
+      system "/usr/bin/codesign", "--verify", "--strict", "--verbose=4", "-R", CODE_REQUIREMENT,
+             libexec/"LPM CLI.app"
+    end
     assert_match "lpm #{version}", shell_output("#{bin}/lpm --version 2>&1")
   end
 end
