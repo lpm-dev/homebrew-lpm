@@ -1,14 +1,15 @@
 require "open3"
 
 class Lpm < Formula
-  # LPM's macOS app must satisfy this requirement. It ends in `notarized`,
-  # which codesign checks against the ticket stapled to the app, offline, so
-  # a Mac with neither Xcode nor Apple's services reachable can install, and
-  # an app LPM didn't sign or Apple didn't notarize is refused.
+  # LPM's macOS app must be signed with LPM's Developer ID. Homebrew's install
+  # sandbox blocks the system service codesign asks to evaluate `notarized`,
+  # so notarization rests on the SHA-256 pinned above, which the tap takes
+  # only from checksums the release signed: the release workflow publishes
+  # only apps Apple notarized, with the ticket stapled.
   CODE_REQUIREMENT = "=anchor apple generic and identifier \"dev.lpm.cli\" and " \
                      "certificate 1[field.1.2.840.113635.100.6.2.6] exists and " \
                      "certificate leaf[field.1.2.840.113635.100.6.1.13] exists and " \
-                     "certificate leaf[subject.OU] = \"823S8YKMRW\" and notarized".freeze
+                     "certificate leaf[subject.OU] = \"823S8YKMRW\"".freeze
 
   desc "Fast package manager for lpm.dev — written in Rust"
   homepage "https://lpm.dev"

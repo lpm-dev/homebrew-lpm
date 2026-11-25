@@ -9,7 +9,7 @@ class InventoryRejected < StandardError; end
 EXPECTED_CODE_REQUIREMENT = "=anchor apple generic and identifier \"dev.lpm.cli\" and " \
                             "certificate 1[field.1.2.840.113635.100.6.2.6] exists and " \
                             "certificate leaf[field.1.2.840.113635.100.6.1.13] exists and " \
-                            "certificate leaf[subject.OU] = \"823S8YKMRW\" and notarized".freeze
+                            "certificate leaf[subject.OU] = \"823S8YKMRW\"".freeze
 
 class FormulaInventoryHarness
   class << self
