@@ -33,51 +33,51 @@ jobs:
         run: brew style Formula/lpm.rb
 
   install-without-xcode:
-    name: Install after Xcode was removed (${{ matrix.selected }} selected)
+    name: Install on a Mac with only the Command Line Tools
     runs-on: macos-15
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        # Deleting Xcode leaves xcode-select pointing at it until the user
-        # switches, so xcrun can't find any tool. Switching to the Command Line
-        # Tools is the other state such a Mac ends up in.
-        selected: [removed-xcode, command-line-tools]
     steps:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
         with:
           stable: true
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - name: Remove Xcode
-        env:
-          SELECTED: ${{ matrix.selected }}
+        with:
+          persist-credentials: false
+      # Homebrew needs the Command Line Tools, and most of its users have no
+      # Xcode. Their stapler fails on LPM's app with "internal error in Code
+      # Signing subsystem".
+      - name: Leave only the Command Line Tools
         run: |
           set -euo pipefail
           xcode=$(xcode-select -p | sed 's#/Contents/Developer$##')
-          case "$xcode" in
-            /Applications/Xcode*.app) ;;
-            *) echo "::error::Xcode isn't selected: $xcode"; exit 1 ;;
-          esac
-          if [ "$SELECTED" = command-line-tools ]; then
-            sudo xcode-select --switch /Library/Developer/CommandLineTools
-          fi
+          echo "SELECTED_XCODE=$xcode" >> "$GITHUB_ENV"
+          sudo xcode-select --switch /Library/Developer/CommandLineTools
           for app in /Applications/Xcode*.app; do
             sudo mv "$app" "${app%.app}.removed"
           done
-          if [ "$SELECTED" = removed-xcode ] && xcrun --find codesign 2>/dev/null; then
-            echo "::error::xcrun still finds developer tools"
-            exit 1
-          fi
+          # xcrun remembers where it found tools.
+          rm -f "${TMPDIR:-/tmp}"/xcrun_db* "$(getconf DARWIN_USER_TEMP_DIR)"/xcrun_db*
+          test "$(env -u DEVELOPER_DIR xcode-select -p)" = /Library/Developer/CommandLineTools
       - name: Install the formula from this checkout
         env:
           HOMEBREW_NO_INSTALL_FROM_API: '1'
           HOMEBREW_NO_AUTO_UPDATE: '1'
         run: |
           set -euo pipefail
+          unset DEVELOPER_DIR
           brew tap-new --no-git local/lpm-ci
           cp Formula/lpm.rb "$(brew --repository local/lpm-ci)/Formula/lpm.rb"
           brew install --formula local/lpm-ci/lpm
           brew test local/lpm-ci/lpm
           version=$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/lpm.rb)
           test "$("$(brew --prefix)/bin/lpm" --version)" = "lpm $version"
+      # Later steps of the runner, such as the checkout cleanup, run git.
+      - name: Restore Xcode
+        if: always()
+        run: |
+          for app in /Applications/Xcode*.removed; do
+            [ -e "$app" ] && sudo mv "$app" "${app%.removed}.app"
+          done
+          sudo xcode-select --switch "${SELECTED_XCODE:-/Applications/Xcode.app}"
+          rm -f "${TMPDIR:-/tmp}"/xcrun_db* "$(getconf DARWIN_USER_TEMP_DIR)"/xcrun_db*
