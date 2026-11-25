@@ -31,3 +31,39 @@ jobs:
         run: bash tests/verify-dispatched-release.sh
       - name: Check Homebrew style
         run: brew style Formula/lpm.rb
+
+  install-without-xcode:
+    name: Install on a Mac with only the Command Line Tools
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
+        with:
+          stable: true
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      # Homebrew users have the Command Line Tools, which lack the stapler
+      # tool, and most have no Xcode.
+      - name: Leave only the Command Line Tools
+        run: |
+          set -euo pipefail
+          sudo xcode-select --switch /Library/Developer/CommandLineTools
+          for xcode in /Applications/Xcode*.app; do
+            sudo mv "$xcode" "${xcode%.app}.unavailable"
+          done
+          if xcrun --find stapler; then
+            echo "::error::stapler is still available"
+            exit 1
+          fi
+      - name: Install the formula from this checkout
+        env:
+          HOMEBREW_NO_INSTALL_FROM_API: '1'
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          set -euo pipefail
+          brew tap-new --no-git local/lpm-ci
+          cp Formula/lpm.rb "$(brew --repository local/lpm-ci)/Formula/lpm.rb"
+          brew install --formula local/lpm-ci/lpm
+          brew test local/lpm-ci/lpm
+          version=$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/lpm.rb)
+          test "$("$(brew --prefix)/bin/lpm" --version)" = "lpm $version"
